@@ -1,19 +1,14 @@
 version: '2.1'
-volumes:
-    sense-data:
-    cloudblockdata:
 services:
-    cloud:
-        # Local build in cloud directory required only for MS Azure Key Vault,
+    data_relay:
+        # Local build in data_relay directory required only for MS Azure Key Vault
         # secret store to copy in certificate file. Otherwise OK to use image.
-        #build: cloud
-        image: kb2ma/cloud
+        #build: data_relay
+        image: balenablocks/data-relay
         privileged: true
         tty: true
-        #restart: always
+        restart: always
         network_mode: host
-        volumes:
-            - 'cloudblockdata:/data'
         depends_on: 
             - "mqtt"
     mqtt:
@@ -22,8 +17,12 @@ services:
             - "1883:1883"
         restart: always
     sensor:
-        image: balenablocks/sensor
+        # Local build in sensor directory delays start by a configurable
+        # amount to allow for environment to stabilize; defaults to 30 seconds.
+        build: sensor
+        #image: balenablocks/sensor
         privileged: true
+        restart: always
         labels:
             io.balena.features.kernel-modules: '1'
             io.balena.features.sysfs: '1'
